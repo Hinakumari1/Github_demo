@@ -2,3 +2,5 @@ this is my file
 basics:
    variables
    datatypes
+    objects
+    classes
