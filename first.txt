@@ -1,2 +1,4 @@
 this is my file
 basics:
+   variables
+   datatypes
