@@ -16,8 +16,8 @@ jobs:
      - name: "Hello from [REPO_NAME]"
        run: echo "Hello from ${{ github.repository }}"
 
-     - name: Lists all files in the repo
+     - name: "Lists all files in the repo"
        run: ls -R
 
-     - name: Counts total files
+     - name: "Counts total files"
        run: find . -type f | wc -l
