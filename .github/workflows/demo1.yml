@@ -10,9 +10,9 @@ jobs:
     steps:
      - uses: actions/checkout@v2
 
-     - name: Print Message
-       run: echo "build start" 
+     - name:  "Current date [DATE]"
+       run: date
 
-     - name: List files
-       run: ls -la
+     - name: "Hello from [REPO_NAME]"
+       run: echo "Hello from ${{ github.repository }}"
   
