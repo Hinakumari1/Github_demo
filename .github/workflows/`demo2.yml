@@ -11,21 +11,23 @@
 #     runs-on: ubuntu-latest
 #     steps:
 #       - run: echo "Hello, ${{ github.event.inputs.name }}! 👋"
-name: Environment Detective
+
+# 
+
+name: wip branch guard
 on:
-    pull_request:
-        branches: 
-            - main
     push:
         branches:
-            - main
+            - 'feat/**'
 jobs:
-    detect:
+    check-wip:
         runs-on: ubuntu-latest
         steps:
-            - name: detect event type
+            - name: check for WIP in branch name
               run: |
-                echo "Triggered By: ${{ github.event_name}}"
-                echo ""
-                echo "Key environment variables:"
-                printenv | head -n 5
+                if [[ "${{ github.ref}}" ==  *"WIP"*]]
+                  echo "::error::Branch name contains WIP ! please remove WIP before pushing"
+                  exit 1
+                else
+                  echo "Branch name  ok - no WIP found"
+                fi
