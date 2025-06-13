@@ -1,0 +1,34 @@
+# name: Greet Me
+# on:
+#   workflow_dispatch:
+#     inputs:
+#         name:
+#             description: 'Your name'
+#             required: true
+#             default: 'Github User'
+# jobs:
+#   greet:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - run: echo "Hello, ${{ github.event.inputs.name }}! 👋"
+
+# 
+
+name: WIP Branch Guard
+on:
+  push:
+    branches:    
+      - 'feat/**'  # Or try 'feat/*' if still having issues
+
+jobs:
+  check-wip:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for WIP in branch name
+        run: |
+          if [[ "${{ github.ref }}" == *"WIP"* ]]; then
+            echo "::error::Branch name contains WIP! Please remove WIP before pushing."
+            exit 1
+          else
+            echo "Branch name OK - no WIP found"
+          fi
