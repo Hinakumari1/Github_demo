@@ -14,20 +14,21 @@
 
 # 
 
-name: wip branch guard
+name: WIP Branch Guard
 on:
-    push:
-        branches:
-            - 'feat/**'
+  push:
+    branches:    
+      - 'feat/**'  # Or try 'feat/*' if still having issues
+
 jobs:
-    check-wip:
-        runs-on: ubuntu-latest
-        steps:
-            - name: check for WIP in branch name
-              run: |
-                if [[ "${{ github.ref}}" ==  *"WIP"*]]
-                  echo "::error::Branch name contains WIP ! please remove WIP before pushing"
-                  exit 1
-                else
-                  echo "Branch name  ok - no WIP found"
-                fi
+  check-wip:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for WIP in branch name
+        run: |
+          if [[ "${{ github.ref }}" == *"WIP"* ]]; then
+            echo "::error::Branch name contains WIP! Please remove WIP before pushing."
+            exit 1
+          else
+            echo "Branch name OK - no WIP found"
+          fi
