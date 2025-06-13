@@ -1,13 +1,31 @@
-name: Greet Me
+# name: Greet Me
+# on:
+#   workflow_dispatch:
+#     inputs:
+#         name:
+#             description: 'Your name'
+#             required: true
+#             default: 'Github User'
+# jobs:
+#   greet:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - run: echo "Hello, ${{ github.event.inputs.name }}! 👋"
+name: Environment Detective
 on:
-  workflow_dispatch:
-    inputs:
-        name:
-            description: 'Your name'
-            required: true
-            default: 'Github User'
+    pull_request:
+        branches: 
+            - main
+    push:
+        branches:
+            - main
 jobs:
-  greet:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "Hello, ${{ github.event.inputs.name }}! 👋"
+    detect:
+        runs-on: ubuntu-latest
+        steps:
+            - name: detect event type
+              run: |
+                echo "Triggered By: ${{ github.event_name}}"
+                echo ""
+                echo "Key environment variables:"
+                printenv | head -n 5
