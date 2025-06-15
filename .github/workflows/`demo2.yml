@@ -43,7 +43,7 @@ jobs:
       - name: 'check for secret existance'
         id: check-secret
         run: |
-          if [ -z "${{ secrets.GREETING_SECRET }}"]; then
+          if [[] -z "${{ secrets.GREETING_SECRET }}" ]]; then
             echo "::warning::No GREETING_SECRET found"
             echo "exists=false" >> $GITHUB_OUTPUT
           else
