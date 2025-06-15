@@ -42,13 +42,20 @@ jobs:
   decode-secret:
     runs-on: ubuntu-latest
     steps:
-      - name: Check and decode GREETING_SECRET
+      - name: Decode GREETING_SECRET if it exists
         env:
           SECRET: ${{ secrets.GREETING_SECRET }}
+        shell: bash
         run: |
           if [ -n "$SECRET" ]; then
-            echo "Decoded message:"
-            echo "$SECRET" | base64 -d
+            echo "GREETING_SECRET is set. Attempting to decode..."
+            # Try to decode the base64 string; catch errors
+            if echo "$SECRET" | base64 -d > decoded_output 2>/dev/null; then
+              echo "✅ Decoded message:"
+              cat decoded_output
+            else
+              echo "❌ Failed to decode GREETING_SECRET. It may not be valid base64."
+            fi
           else
-            echo "GREETING_SECRET is not set. Skipping..."
+            echo "⚠️ GREETING_SECRET is not set. Skipping decoding."
           fi
