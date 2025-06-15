@@ -1,61 +1,116 @@
-# name: Greet Me
+# #name: Basic Build Workflow
+# # on:
+# #   push:
+# #     branches: ["main"]
+# # jobs:
+# #   build:
+# #     runs-on: ubuntu-latest
+    
+# #     steps:
+# #        - uses: actions/checkout@v4
+
+# #     #  - name:  "Current date [DATE]"
+# #     #    run: date
+
+# #     #  - name: "Hello from [REPO_NAME]"
+# #     #    run: echo "Hello from ${{ github.repository }}"
+
+# #     #  - name: "Lists all files in the repo"
+# #     #    run: ls -R
+
+# #     #  - name: "Counts total files"
+# #     #    run: find . -type f | wc -l
+# #        - name: 'check python version'
+# #          uses: actions/setup-python@v5
+# #          with: 
+# #           python-version: 3.11
+
+# #        - name: 'Verify Python version'
+# #          run: python --version 
+
+# # name: Greet Me
+# # on:
+# #   workflow_dispatch:
+# #     inputs:
+# #         name:
+# #             description: 'Your name'
+# #             required: true
+# #             default: 'Github User'
+# # jobs:
+# #   greet:
+# #     runs-on: ubuntu-latest
+# #     steps:
+# #       - run: echo "Hello, ${{ github.event.inputs.name }}! 👋"
+
+# # 
+
+# # name: WIP Branch Guard
+# # on:
+# #   push:
+# #     branches:    
+# #       - 'feat/**'  # Or try 'feat/*' if still having issues
+
+# # jobs:
+# #   check-wip:
+# #     runs-on: ubuntu-latest
+# #     steps:
+# #       - name: Check for WIP in branch name
+# #         run: |
+# #           if [[ "${{ github.ref }}" == *"WIP"* ]]; then
+# #             echo "::error::Branch name contains WIP! Please remove WIP before pushing."
+# #             exit 1
+# #           else
+# #             echo "Branch name OK - no WIP found"
+# #           fi
+
+# name: Decode Greeting Secret
+
 # on:
 #   workflow_dispatch:
-#     inputs:
-#         name:
-#             description: 'Your name'
-#             required: true
-#             default: 'Github User'
-# jobs:
-#   greet:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - run: echo "Hello, ${{ github.event.inputs.name }}! 👋"
-
-# 
-
-# name: WIP Branch Guard
-# on:
-#   push:
-#     branches:    
-#       - 'feat/**'  # Or try 'feat/*' if still having issues
 
 # jobs:
-#   check-wip:
+#   decode-secret:
 #     runs-on: ubuntu-latest
 #     steps:
-#       - name: Check for WIP in branch name
+#       - name: Decode GREETING_SECRET if it exists
+#         env:
+#           SECRET: ${{ secrets.GREETING_SECRET }}
+#         shell: bash
 #         run: |
-#           if [[ "${{ github.ref }}" == *"WIP"* ]]; then
-#             echo "::error::Branch name contains WIP! Please remove WIP before pushing."
-#             exit 1
+#           if [ -n "$SECRET" ]; then
+#             echo "GREETING_SECRET is set. Attempting to decode..."
+#             # Try to decode the base64 string; catch errors
+#             if echo "$SECRET" | base64 -d > decoded_output 2>/dev/null; then
+#               echo "✅ Decoded message:"
+#               cat decoded_output
+#             else
+#               echo "❌ Failed to decode GREETING_SECRET. It may not be valid base64."
+#             fi
 #           else
-#             echo "Branch name OK - no WIP found"
+#             echo "⚠️ GREETING_SECRET is not set. Skipping decoding."
 #           fi
 
-name: Decode Greeting Secret
-
+name: Conditional CI Trigger
 on:
-  workflow_dispatch:
-
+  push:
+    branches:  
+      - main
+  issues:
+      types: [labeled]
+  pull_request:
+      types: [labeled]
 jobs:
-  decode-secret:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Decode GREETING_SECRET if it exists
-        env:
-          SECRET: ${{ secrets.GREETING_SECRET }}
-        shell: bash
-        run: |
-          if [ -n "$SECRET" ]; then
-            echo "GREETING_SECRET is set. Attempting to decode..."
-            # Try to decode the base64 string; catch errors
-            if echo "$SECRET" | base64 -d > decoded_output 2>/dev/null; then
-              echo "✅ Decoded message:"
-              cat decoded_output
-            else
-              echo "❌ Failed to decode GREETING_SECRET. It may not be valid base64."
-            fi
-          else
-            echo "⚠️ GREETING_SECRET is not set. Skipping decoding."
-          fi
+    conditional-job:
+      runs-on: ubuntu-latest
+      if: |
+        github.event_name == 'push' || 
+        (github.event.label.name == 'run-ci' && (github.event_name == 'issues' || github.event_name == 'pull_request'))
+      steps:
+        - name: 'Production deployment if pushed to main'
+          if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+          run: echo "production deployment started"
+
+        - name: 'Manual CI if labeled'
+          if: (github.event_name == 'issues' || github.event_name == 'pull_request') && github.event.label.name == 'run-ci'
+          run: echo "🛠️ Manual CI triggered by label"
+          
