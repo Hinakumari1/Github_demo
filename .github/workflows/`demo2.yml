@@ -33,25 +33,22 @@
 #             echo "Branch name OK - no WIP found"
 #           fi
 
-name: Secret Greeter
-on: workflow_dispatch
+name: Decode Greeting Secret
+
+on:
+  workflow_dispatch:
 
 jobs:
   decode-secret:
     runs-on: ubuntu-latest
     steps:
-      - name: Check secret existence
-        id: check-secret
+      - name: Check and decode GREETING_SECRET
+        env:
+          SECRET: ${{ secrets.GREETING_SECRET }}
         run: |
-          if [[ -z "${{ secrets.GREETING_SECRET }}" ]]; then  # Extra closing brace removed
-            echo "::warning::No GREETING_SECRET found"
-            echo "exists=false" >> $GITHUB_OUTPUT
+          if [ -n "$SECRET" ]; then
+            echo "Decoded message:"
+            echo "$SECRET" | base64 -d
           else
-            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "GREETING_SECRET is not set. Skipping..."
           fi
-
-      - name: Decode and print secret
-        if: steps.check-secret.outputs.exists == 'true'
-        run: |
-          echo "Decoded message:"
-          echo "${{ secrets.GREETING_SECRET }}" | base64 -d  # Fixed syntax
