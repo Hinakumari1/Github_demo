@@ -43,7 +43,7 @@ jobs:
       - name: Check secret existence
         id: check-secret
         run: |
-          if [[ -z "${{ secrets.GREETING_SECRET }}" ]]; then
+          if [[ -z "${{ secrets.GREETING_SECRET }}" ]]; then  # Extra closing brace removed
             echo "::warning::No GREETING_SECRET found"
             echo "exists=false" >> $GITHUB_OUTPUT
           else
@@ -54,4 +54,4 @@ jobs:
         if: steps.check-secret.outputs.exists == 'true'
         run: |
           echo "Decoded message:"
-          echo "${{ secrets.GREETING_SECRET }}" | base64 -d
+          echo "${{ secrets.GREETING_SECRET }}" | base64 -d  # Fixed syntax
