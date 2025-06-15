@@ -90,27 +90,48 @@
 #             echo "⚠️ GREETING_SECRET is not set. Skipping decoding."
 #           fi
 
-name: Conditional CI Trigger
-on:
-  push:
-    branches:  
-      - main
-  issues:
-      types: [labeled]
-  pull_request:
-      types: [labeled]
-jobs:
-    conditional-job:
-      runs-on: ubuntu-latest
-      if: |
-        github.event_name == 'push' || 
-        (github.event.label.name == 'run-ci' && (github.event_name == 'issues' || github.event_name == 'pull_request'))
-      steps:
-        - name: 'Production deployment if pushed to main'
-          if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-          run: echo "production deployment started"
+# name: Conditional CI Trigger
+# on:
+#   push:
+#     branches:  
+#       - main
+#   issues:
+#       types: [labeled]
+#   pull_request:
+#       types: [labeled]
+# jobs:
+#     conditional-job:
+#       runs-on: ubuntu-latest
+#       if: |
+#         github.event_name == 'push' || 
+#         (github.event.label.name == 'run-ci' && (github.event_name == 'issues' || github.event_name == 'pull_request'))
+#       steps:
+#         - name: 'Production deployment if pushed to main'
+#           if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+#           run: echo "production deployment started"
 
-        - name: 'Manual CI if labeled'
-          if: (github.event_name == 'issues' || github.event_name == 'pull_request') && github.event.label.name == 'run-ci'
-          run: echo "🛠️ Manual CI triggered by label"
+#         - name: 'Manual CI if labeled'
+#           if: (github.event_name == 'issues' || github.event_name == 'pull_request') && github.event.label.name == 'run-ci'
+#           run: echo "🛠️ Manual CI triggered by label"
           
+name: Matrix Os Test
+on:
+  workflow_dispatch:
+jobs:
+  print-info:
+    name: print os info and time
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest,macos-latest,windows-latest]
+    steps:
+      - name: print runner os and current time
+        run: |
+          echo "Running on: ${{ runner.os }}"
+          echo "current time:"
+          if [ "${{ runner.os }}" == "windows"]; then 
+            powershell.exe -command "Get Date"
+          else
+            date
+          fi
+        shell: bash
