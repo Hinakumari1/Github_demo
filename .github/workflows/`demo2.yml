@@ -130,7 +130,7 @@ jobs:
           echo "Running on: ${{ runner.os }}"
           echo "current time:"
            if [ "${{ runner.os }}" == "Windows" ]; then
-            powershell.exe -command "Get Date"
+            powershell.exe -command "Get-Date"
           else
             date
           fi
