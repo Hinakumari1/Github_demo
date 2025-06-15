@@ -33,24 +33,25 @@
 #             echo "Branch name OK - no WIP found"
 #           fi
 
-name: Secret Greet
-on:
-   workflow_dispatch:
+name: Secret Greeter
+on: workflow_dispatch
+
 jobs:
-  decode_secret:
+  decode-secret:
     runs-on: ubuntu-latest
     steps:
-      - name: 'check for secret existance'
+      - name: Check secret existence
         id: check-secret
         run: |
-          if [[] -z "${{ secrets.GREETING_SECRET }}" ]]; then
+          if [[ -z "${{ secrets.GREETING_SECRET }}" ]]; then
             echo "::warning::No GREETING_SECRET found"
             echo "exists=false" >> $GITHUB_OUTPUT
           else
             echo "exists=true" >> $GITHUB_OUTPUT
           fi
-          - name: Decode and print secret
-          if: steps.check-secret.outputs.exists == 'true'
-          run: |
-            echo "Decoded message:"
-            echo "${{ secrets.GREETING_SECRET }}" | base64 -d
+
+      - name: Decode and print secret
+        if: steps.check-secret.outputs.exists == 'true'
+        run: |
+          echo "Decoded message:"
+          echo "${{ secrets.GREETING_SECRET }}" | base64 -d
