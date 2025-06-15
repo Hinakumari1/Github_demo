@@ -14,21 +14,43 @@
 
 # 
 
-name: WIP Branch Guard
-on:
-  push:
-    branches:    
-      - 'feat/**'  # Or try 'feat/*' if still having issues
+# name: WIP Branch Guard
+# on:
+#   push:
+#     branches:    
+#       - 'feat/**'  # Or try 'feat/*' if still having issues
 
+# jobs:
+#   check-wip:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Check for WIP in branch name
+#         run: |
+#           if [[ "${{ github.ref }}" == *"WIP"* ]]; then
+#             echo "::error::Branch name contains WIP! Please remove WIP before pushing."
+#             exit 1
+#           else
+#             echo "Branch name OK - no WIP found"
+#           fi
+
+name: Secret Greet
+on:
+   workflow_dispatch:
 jobs:
-  check-wip:
+  decode_secret:
     runs-on: ubuntu-latest
     steps:
-      - name: Check for WIP in branch name
+      - name: 'check for secret existance'
+        id: check-secret
         run: |
-          if [[ "${{ github.ref }}" == *"WIP"* ]]; then
-            echo "::error::Branch name contains WIP! Please remove WIP before pushing."
-            exit 1
+          if [ -z "${{ secrets.GREETING_SECRET }}"]; then
+            echo "::warning::No GREETING_SECRET found"
+            echo "exists=false" >> $GITHUB_OUTPUT
           else
-            echo "Branch name OK - no WIP found"
+            echo "exists=true" >> $GITHUB_OUTPUT
           fi
+          - name: Decode and print secret
+          if: steps.check-secret.outputs.exists == 'true'
+          run: |
+            echo "Decoded message:"
+            echo "${{ secrets.GREETING_SECRET }}" | base64 -d
