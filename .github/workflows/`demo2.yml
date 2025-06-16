@@ -1,178 +1,193 @@
-# # #name: Basic Build Workflow
-# # # on:
-# # #   push:
-# # #     branches: ["main"]
-# # # jobs:
-# # #   build:
-# # #     runs-on: ubuntu-latest
+# # # #name: Basic Build Workflow
+# # # # on:
+# # # #   push:
+# # # #     branches: ["main"]
+# # # # jobs:
+# # # #   build:
+# # # #     runs-on: ubuntu-latest
     
-# # #     steps:
-# # #        - uses: actions/checkout@v4
+# # # #     steps:
+# # # #        - uses: actions/checkout@v4
 
-# # #     #  - name:  "Current date [DATE]"
-# # #     #    run: date
+# # # #     #  - name:  "Current date [DATE]"
+# # # #     #    run: date
 
-# # #     #  - name: "Hello from [REPO_NAME]"
-# # #     #    run: echo "Hello from ${{ github.repository }}"
+# # # #     #  - name: "Hello from [REPO_NAME]"
+# # # #     #    run: echo "Hello from ${{ github.repository }}"
 
-# # #     #  - name: "Lists all files in the repo"
-# # #     #    run: ls -R
+# # # #     #  - name: "Lists all files in the repo"
+# # # #     #    run: ls -R
 
-# # #     #  - name: "Counts total files"
-# # #     #    run: find . -type f | wc -l
-# # #        - name: 'check python version'
-# # #          uses: actions/setup-python@v5
-# # #          with: 
-# # #           python-version: 3.11
+# # # #     #  - name: "Counts total files"
+# # # #     #    run: find . -type f | wc -l
+# # # #        - name: 'check python version'
+# # # #          uses: actions/setup-python@v5
+# # # #          with: 
+# # # #           python-version: 3.11
 
-# # #        - name: 'Verify Python version'
-# # #          run: python --version 
+# # # #        - name: 'Verify Python version'
+# # # #          run: python --version 
 
-# # # name: Greet Me
+# # # # name: Greet Me
+# # # # on:
+# # # #   workflow_dispatch:
+# # # #     inputs:
+# # # #         name:
+# # # #             description: 'Your name'
+# # # #             required: true
+# # # #             default: 'Github User'
+# # # # jobs:
+# # # #   greet:
+# # # #     runs-on: ubuntu-latest
+# # # #     steps:
+# # # #       - run: echo "Hello, ${{ github.event.inputs.name }}! 👋"
+
+# # # # 
+
+# # # # name: WIP Branch Guard
+# # # # on:
+# # # #   push:
+# # # #     branches:    
+# # # #       - 'feat/**'  # Or try 'feat/*' if still having issues
+
+# # # # jobs:
+# # # #   check-wip:
+# # # #     runs-on: ubuntu-latest
+# # # #     steps:
+# # # #       - name: Check for WIP in branch name
+# # # #         run: |
+# # # #           if [[ "${{ github.ref }}" == *"WIP"* ]]; then
+# # # #             echo "::error::Branch name contains WIP! Please remove WIP before pushing."
+# # # #             exit 1
+# # # #           else
+# # # #             echo "Branch name OK - no WIP found"
+# # # #           fi
+
+# # # name: Decode Greeting Secret
+
 # # # on:
 # # #   workflow_dispatch:
-# # #     inputs:
-# # #         name:
-# # #             description: 'Your name'
-# # #             required: true
-# # #             default: 'Github User'
-# # # jobs:
-# # #   greet:
-# # #     runs-on: ubuntu-latest
-# # #     steps:
-# # #       - run: echo "Hello, ${{ github.event.inputs.name }}! 👋"
-
-# # # 
-
-# # # name: WIP Branch Guard
-# # # on:
-# # #   push:
-# # #     branches:    
-# # #       - 'feat/**'  # Or try 'feat/*' if still having issues
 
 # # # jobs:
-# # #   check-wip:
+# # #   decode-secret:
 # # #     runs-on: ubuntu-latest
 # # #     steps:
-# # #       - name: Check for WIP in branch name
+# # #       - name: Decode GREETING_SECRET if it exists
+# # #         env:
+# # #           SECRET: ${{ secrets.GREETING_SECRET }}
+# # #         shell: bash
 # # #         run: |
-# # #           if [[ "${{ github.ref }}" == *"WIP"* ]]; then
-# # #             echo "::error::Branch name contains WIP! Please remove WIP before pushing."
-# # #             exit 1
+# # #           if [ -n "$SECRET" ]; then
+# # #             echo "GREETING_SECRET is set. Attempting to decode..."
+# # #             # Try to decode the base64 string; catch errors
+# # #             if echo "$SECRET" | base64 -d > decoded_output 2>/dev/null; then
+# # #               echo "✅ Decoded message:"
+# # #               cat decoded_output
+# # #             else
+# # #               echo "❌ Failed to decode GREETING_SECRET. It may not be valid base64."
+# # #             fi
 # # #           else
-# # #             echo "Branch name OK - no WIP found"
+# # #             echo "⚠️ GREETING_SECRET is not set. Skipping decoding."
 # # #           fi
 
-# # name: Decode Greeting Secret
+# # # name: Conditional CI Trigger
+# # # on:
+# # #   push:
+# # #     branches:  
+# # #       - main
+# # #   issues:
+# # #       types: [labeled]
+# # #   pull_request:
+# # #       types: [labeled]
+# # # jobs:
+# # #     conditional-job:
+# # #       runs-on: ubuntu-latest
+# # #       if: |
+# # #         github.event_name == 'push' || 
+# # #         (github.event.label.name == 'run-ci' && (github.event_name == 'issues' || github.event_name == 'pull_request'))
+# # #       steps:
+# # #         - name: 'Production deployment if pushed to main'
+# # #           if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+# # #           run: echo "production deployment started"
 
+# # #         - name: 'Manual CI if labeled'
+# # #           if: (github.event_name == 'issues' || github.event_name == 'pull_request') && github.event.label.name == 'run-ci'
+# # #           run: echo "🛠️ Manual CI triggered by label"
+          
+# # name: Matrix Os Test
 # # on:
 # #   workflow_dispatch:
-
 # # jobs:
-# #   decode-secret:
-# #     runs-on: ubuntu-latest
+# #   print-info:
+# #     name: print os info and time
+# #     runs-on: ${{ matrix.os }}
+# #     strategy:
+# #       matrix:
+# #         os: [ubuntu-latest,macos-latest,windows-latest]
 # #     steps:
-# #       - name: Decode GREETING_SECRET if it exists
-# #         env:
-# #           SECRET: ${{ secrets.GREETING_SECRET }}
-# #         shell: bash
+# #       - name: print runner os and current time
 # #         run: |
-# #           if [ -n "$SECRET" ]; then
-# #             echo "GREETING_SECRET is set. Attempting to decode..."
-# #             # Try to decode the base64 string; catch errors
-# #             if echo "$SECRET" | base64 -d > decoded_output 2>/dev/null; then
-# #               echo "✅ Decoded message:"
-# #               cat decoded_output
-# #             else
-# #               echo "❌ Failed to decode GREETING_SECRET. It may not be valid base64."
-# #             fi
+# #           echo "Running on: ${{ runner.os }}"
+# #           echo "current time:"
+# #            if [ "${{ runner.os }}" == "Windows" ]; then
+# #             powershell.exe -command "Get-Date"
 # #           else
-# #             echo "⚠️ GREETING_SECRET is not set. Skipping decoding."
+# #             date
 # #           fi
+# #         shell: bash
 
-# # name: Conditional CI Trigger
-# # on:
-# #   push:
-# #     branches:  
-# #       - main
-# #   issues:
-# #       types: [labeled]
-# #   pull_request:
-# #       types: [labeled]
-# # jobs:
-# #     conditional-job:
-# #       runs-on: ubuntu-latest
-# #       if: |
-# #         github.event_name == 'push' || 
-# #         (github.event.label.name == 'run-ci' && (github.event_name == 'issues' || github.event_name == 'pull_request'))
-# #       steps:
-# #         - name: 'Production deployment if pushed to main'
-# #           if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-# #           run: echo "production deployment started"
+# name: Generate Markdown Report
 
-# #         - name: 'Manual CI if labeled'
-# #           if: (github.event_name == 'issues' || github.event_name == 'pull_request') && github.event.label.name == 'run-ci'
-# #           run: echo "🛠️ Manual CI triggered by label"
-          
-# name: Matrix Os Test
 # on:
 #   workflow_dispatch:
-# jobs:
-#   print-info:
-#     name: print os info and time
-#     runs-on: ${{ matrix.os }}
-#     strategy:
-#       matrix:
-#         os: [ubuntu-latest,macos-latest,windows-latest]
-#     steps:
-#       - name: print runner os and current time
-#         run: |
-#           echo "Running on: ${{ runner.os }}"
-#           echo "current time:"
-#            if [ "${{ runner.os }}" == "Windows" ]; then
-#             powershell.exe -command "Get-Date"
-#           else
-#             date
-#           fi
-#         shell: bash
+#   push:
+#     branches: [main]
 
-name: Generate Markdown Report
+# jobs:
+#   generate-report:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+
+#       - name: Create report.md
+#         run: |
+#           echo "# 🚀 GitHub Actions Report" > report.md
+#           echo "" >> report.md
+#           echo "## 🆔 Workflow Run ID" >> report.md
+#           echo "${{ github.run_id }}" >> report.md
+#           echo "" >> report.md
+#           echo "## 🧾 Triggering Event" >> report.md
+#           echo "Event: \`${{ github.event_name }}\`" >> report.md
+#           echo "Ref: \`${{ github.ref }}\`" >> report.md
+#           echo "Actor: \`${{ github.actor }}\`" >> report.md
+#           echo "" >> report.md
+#           echo "## 🖥️ System Info" >> report.md
+#           echo "OS: \`$(uname -s)\`" >> report.md
+#           echo "Runner OS: \`${{ runner.os }}\`" >> report.md
+#           echo "Runner Name: \`${{ runner.name }}\`" >> report.md
+#           echo "Runner Version: \`${{ runner.arch }}\`" >> report.md
+#           echo "" >> report.md
+#           echo "_Generated automatically on $(date)_." >> report.md
+
+#       - name: Upload report as artifact
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: workflow-report
+#           path: report.md
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-
 jobs:
-  generate-report:
+  test:
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        node-version: [18, 20]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Create report.md
-        run: |
-          echo "# 🚀 GitHub Actions Report" > report.md
-          echo "" >> report.md
-          echo "## 🆔 Workflow Run ID" >> report.md
-          echo "${{ github.run_id }}" >> report.md
-          echo "" >> report.md
-          echo "## 🧾 Triggering Event" >> report.md
-          echo "Event: \`${{ github.event_name }}\`" >> report.md
-          echo "Ref: \`${{ github.ref }}\`" >> report.md
-          echo "Actor: \`${{ github.actor }}\`" >> report.md
-          echo "" >> report.md
-          echo "## 🖥️ System Info" >> report.md
-          echo "OS: \`$(uname -s)\`" >> report.md
-          echo "Runner OS: \`${{ runner.os }}\`" >> report.md
-          echo "Runner Name: \`${{ runner.name }}\`" >> report.md
-          echo "Runner Version: \`${{ runner.arch }}\`" >> report.md
-          echo "" >> report.md
-          echo "_Generated automatically on $(date)_." >> report.md
-
-      - name: Upload report as artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          name: workflow-report
-          path: report.md
+          node-version: ${{ matrix.node-version }}
+      - run: npm test
